@@ -3,6 +3,7 @@
 // This C code char int value is represented through ASCII TABLE
 // Char Comparison using ASCII TABLE
 // Latest working copy as of 3 Nov 2021
+// This program
 // =================================================================
 #include <stdio.h>
 #include <string.h>
@@ -49,10 +50,10 @@ int main()
         fptodecstore = binfptodec(binnum);
         printf("\na) IEEE 754 floating point input               : %.34s", binnum);
         printf("\nb) Before conversion, the 1-bit sign bit is    : %c", fptodecstore->signbit);
-        printf("\nc) The 8-bit biased exponent is                : %d", fptodecstore->actexponent); // to add in parameter for actual exponent
-        printf("\nd) The 8-bit actual exponent is                : %.8s", fptodecstore->biasedexponent);
-        printf("\ne) The 23-bit fraction is                      : %.23s", fptodecstore->mantissa);
-        printf("\nf) After conversion, the decimal number is     : %lf", fptodecstore->decresult);
+        printf("\nc) The 8-bit biased exponent is                : %.8s", fptodecstore->biasedexponent); // to add in parameter for actual exponent
+        printf("\nd) The 8-bit actual exponent is                : %d", fptodecstore->actexponent);
+        printf("\ne) The 23-bit fraction is                      : %.24s", fptodecstore->mantissa);
+        printf("\nf) After conversion, the decimal number is     : %.12g", fptodecstore->decresult);
         free(fptodecstore);
     }
     else
@@ -70,8 +71,10 @@ int main()
     }
 }
 
-// ----------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Function below will be to convert decimal to IEEE754 binary floating point
+// ----------------------------------------------------------------------------
+
 binfpstruct *dectobinfp(float values)
 {
     binfpstruct *result = (binfpstruct *)malloc(sizeof(binfpstruct) * 2);
@@ -85,9 +88,7 @@ binfpstruct *dectobinfp(float values)
     converttobin(value1, result->binarynonfract, size1, 0);
     converttobin(value1, result->binaryfract, size1, 1);
     result->signbit = values < 0. ? 49 : 48;
-
     length2 = strlen(result->binaryfract);
-
     if (value1 < 1)
     {
         //t = strlen(result.binaryfract[i]);
@@ -110,7 +111,7 @@ binfpstruct *dectobinfp(float values)
         expsize = expsize + (strlen(result->binarynonfract) - 1);
     }
     memcpy(result->mantissa, binstore, LEN(result->mantissa));
-    // To remove result.mantissa index 0
+
     if (expsize != 0)
     {
         converttobin((float)expsize, result->biasedexponent, 8, 2);
@@ -227,69 +228,65 @@ binfpstruct *binfptodec(char *values)
     for (i = 1; i < 37; i++)
     {
         tempstore = (int)values[i];
-        if ((int)values[i] != 32)
+        if ((int)values[1] != 32)
         {
-            //printf("\n SUCCESS (Func) index : %d  - %c", i, values[i]);
-            if (i > 0 && indxempt < i)
+            // If there is no empty index
+            if (i < 9)
             {
-                if (indxempt == 0)
+                store->biasedexponent[i - 1] = values[i];
+                // Check if value is 1
+                if (tempstore == 49)
                 {
-                    // If there is no empty index
-                    if (i < 9)
-                    {
-                        store->biasedexponent[i - 1] = values[i];
-                        // Check if value is 1
-                        if (tempstore == 49)
-                        {
-                            biaseddec = biaseddec + (pow(2, (BSIZE - (count + 1))));
-                        }
-                        count++;
-                    }
-                    else
-                    {
-                        store->mantissa[i - 1] = values[i];
-                        if (i == 9)
-                        {
-                            count = 0;
-                        }
-                        if (tempstore == 49)
-                        {
-                            mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
-                        }
-                        count++;
-                    }
+                    biaseddec = biaseddec + (pow(2, (BSIZE - (count + 1))));
                 }
-                else if (indxempt == 1)
-                {
-                    // first empty space after store biased exponent
-                    store->biasedexponent[count] = values[i];
-                    // Check if value is 1
-                    if (tempstore == 49)
-                    {
-                        biaseddec = biaseddec + (pow(2, (BSIZE - (count + 1))));
-                    }
-                    count++;
-                }
-                else if (indxempt == 10)
-                {
-                    // second empty space after to store mantissa
+                count++;
+            }
+            else
+            {
 
-                    store->mantissa[count] = values[i];
-                    if (tempstore == 49)
-                    {
-                        mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
-                    }
-                    count++;
+                if (i == 9)
+                {
+                    count = 0;
                 }
+                store->mantissa[count] = values[i];
+                if (tempstore == 49)
+                {
+                    mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
+                }
+                count++;
             }
         }
         else
         {
-            count = 0;
-            indxempt = i;
+            // Floating point with space
+
+            if (i == 1 || i == 10)
+            {
+                count = 0;
+            }
+            if (i > 1 && i < 10)
+            {
+                // first empty space after store biased exponent
+                store->biasedexponent[count] = values[i];
+                // Check if value is 1
+                if (tempstore == 49)
+                {
+                    biaseddec = biaseddec + (pow(2, (BSIZE - (count + 1))));
+                }
+                count++;
+            }
+            if (i > 10)
+            {
+                // second empty space after to store mantissa
+                store->mantissa[count] = values[i];
+                if (tempstore == 49)
+                {
+                    mantissaresult = mantissaresult + (pow(2, ((count+1) * -1)));
+                }
+                count++;
+            }
         }
     }
-
     //printf("\nBIASED DECIMAL FORMAT b4 : %d", biaseddec);
     biaseddec -= 127;
     store->actexponent = biaseddec;
