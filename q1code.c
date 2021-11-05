@@ -248,7 +248,10 @@ binfpstruct *binfptodec(char *values)
                 {
                     count = 0;
                 }
-                store->mantissa[count] = values[i];
+                if ((int)values[i] != 10)
+                {
+                    store->mantissa[count] = values[i];
+                }
                 if (tempstore == 49)
                 {
                     mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
@@ -278,10 +281,13 @@ binfpstruct *binfptodec(char *values)
             if (i > 10)
             {
                 // second empty space after to store mantissa
-                store->mantissa[count] = values[i];
+                if ((int)values[i] != 10)
+                {
+                    store->mantissa[count] = values[i];
+                }
                 if (tempstore == 49)
                 {
-                    mantissaresult = mantissaresult + (pow(2, ((count+1) * -1)));
+                    mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
                 }
                 count++;
             }
