@@ -9,6 +9,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 #define BSIZE 8
 #define MSIZE 23
 #define LEN(x) (sizeof(x) / sizeof((x)[0]))
@@ -16,10 +17,10 @@ typedef struct
 {
     int actexponent;
     char signbit;
-    char biasedexponent[20];
-    char mantissa[200];
-    char binarynonfract[200];
-    char binaryfract[160];
+    char *biasedexponent;
+    char *mantissa;
+    char *binarynonfract;
+    char *binaryfract;
     double decresult;
 } binfpstruct;
 
@@ -35,10 +36,10 @@ int main()
     char binnum[40] = {};
     binfpstruct *fptodecstore;
     printf("Choose an option:");
-    printf("\n1. Decimal to IEEE 754 Binary floating point \n2. IEEE 754 Binary floating point to Decimal");
-    printf("\nEnter your choice : ");
+    printf("\n\n1. Decimal to IEEE 754 Binary floating point \n\n2. IEEE 754 Binary floating point to Decimal");
+    printf("\n\nEnter your choice :");
     scanf("%d", &choice);
-    fflush(stdin); // Flush the output buffer of the stream
+    fflush(stdin); // Flush the input buffer of the stream
     if (choice == 2)
     {
         printf("\nEnter the 32-bits binary number in IEEE 754 floating point format : ");
@@ -52,8 +53,11 @@ int main()
         printf("\nb) Before conversion, the 1-bit sign bit is    : %c", fptodecstore->signbit);
         printf("\nc) The 8-bit biased exponent is                : %.8s", fptodecstore->biasedexponent); // to add in parameter for actual exponent
         printf("\nd) The 8-bit actual exponent is                : %d", fptodecstore->actexponent);
-        printf("\ne) The 23-bit fraction is                      : %.24s", fptodecstore->mantissa);
+        printf("\ne) The 23-bit fraction is                      : %.23s", fptodecstore->mantissa);
         printf("\nf) After conversion, the decimal number is     : %.12g", fptodecstore->decresult);
+        free(fptodecstore->biasedexponent);
+        free(fptodecstore->mantissa);
+        
         free(fptodecstore);
     }
     else
@@ -65,8 +69,10 @@ int main()
         printf("\nb) After conversion, the 1-bit sign bit is : %c", binfp->signbit);
         printf("\nc) The actual exponent is                  : %d", binfp->actexponent); // to add in parameter for actual exponent
         printf("\nd) The 8-bit biased exponent is            : %.8s", binfp->biasedexponent);
-        printf("\ne) The 23-bit fraction is                  : %.24s", binfp->mantissa);
+        printf("\ne) The 23-bit fraction is                  : %.23s", binfp->mantissa);
         printf("\nf) IEEE754 binary floating point           : %c %.8s %.23s", binfp->signbit, binfp->biasedexponent, binfp->mantissa);
+        free(binfp->mantissa);
+        free(binfp->biasedexponent);
         free(binfp);
     }
 }
@@ -77,21 +83,22 @@ int main()
 
 binfpstruct *dectobinfp(float values)
 {
-    binfpstruct *result = (binfpstruct *)malloc(sizeof(binfpstruct) * 2);
-    int size1 = 150;
-    char *binstore;
-    float value1 = fabs(values);
+    binfpstruct *result = (binfpstruct *)malloc(sizeof(binfpstruct));
+    int size1 = 160;
+    float value = fabs(values);
     int expsize = 127; // expoenent size for 32bit ieee745
-    int i, length2 = 0, t = 0;
-    binstore = (char *)malloc(sizeof(char) * size1 * 2);
+    int i, length2 = 0, t=0;;
     //zeroarray(result.binarynonfract, 32);
-    converttobin(value1, result->binarynonfract, size1, 0);
-    converttobin(value1, result->binaryfract, size1, 1);
+    result->binaryfract = (char *)calloc(size1, sizeof(result->binaryfract));
+    result->binarynonfract = (char *)calloc(size1, sizeof(result->binaryfract));
+    converttobin(value, result->binarynonfract, size1, 0);
+    converttobin(value, result->binaryfract, size1, 1);
     result->signbit = values < 0. ? 49 : 48;
+    int sizeez = strlen(result->binaryfract) + strlen(result->binarynonfract);
+    result->mantissa = (char *)calloc(sizeez, sizeof(result->mantissa));
     length2 = strlen(result->binaryfract);
-    if (value1 < 1)
+    if (value < 1)
     {
-        //t = strlen(result.binaryfract[i]);
         for (i = 0; i < length2; i++)
         {
             if ((int)result->binaryfract[i] == 49)
@@ -101,28 +108,36 @@ binfpstruct *dectobinfp(float values)
                 break;
             }
         }
-        // concatcat from after first one onwards
-        strcat(binstore, result->binaryfract + t + 1); // concat
+        if(expsize != 0){
+            strcpy(result->mantissa, result->binaryfract + t + 1); // copy
+        }else{
+            strcpy(result->mantissa, result->binaryfract + t); // copy
+        }
     }
     else
     {
-        strcpy(binstore, result->binarynonfract + 1); // copy
-        strcat(binstore, result->binaryfract);        // concat
+        strcpy(result->mantissa, result->binarynonfract + 1); // copy
+        strcat(result->mantissa, result->binaryfract);        // concat
         expsize = expsize + (strlen(result->binarynonfract) - 1);
     }
-    memcpy(result->mantissa, binstore, LEN(result->mantissa));
 
+    //memcpy(result->mantissa, binstore, strlen(result->binaryfract) + strlen(result->binarynonfract));
+    free(result->binaryfract);
+    free(result->binarynonfract);
+    result->actexponent = expsize;
     if (expsize != 0)
     {
+        result->biasedexponent = (char *)calloc(20, sizeof(result->mantissa));
         converttobin((float)expsize, result->biasedexponent, 8, 2);
     }
     else
     {
-        memcpy(result->biasedexponent, "00000000", LEN(result->biasedexponent));
+        result->biasedexponent = (char *)calloc(8, sizeof(result->mantissa));
+        memcpy(result->biasedexponent, "00000000", 8);
     }
 
     //printf(" TTEEE : %lu", strlen(result.binarynonfract));
-    free(binstore);
+
     return result;
 }
 
@@ -136,7 +151,7 @@ void converttobin(float value, char *result, unsigned int len, int option)
     int mcount = 0, tcount = 0;
     //char *reversestr = malloc(sizeof(char) * len);
 
-    // Option 1 : Decimal
+    // Option 1 : Fraction Option2 : Non Decimal to binary
     if (option == 1)
     {
         while (tcount < len)
@@ -217,13 +232,17 @@ char *strrev(char *str)
 //================================================================
 binfpstruct *binfptodec(char *values)
 {
-    binfpstruct *store = (binfpstruct *)malloc(sizeof(binfpstruct) * 2);
+    binfpstruct *store = (binfpstruct *)malloc(sizeof(binfpstruct));
     store->signbit = values[0];
     int signbits = (int)values[0] == 49 ? 1 : 0;
     int count = 0, indxempt = 0, i;
     int biaseddec = 0;
     double mantissaresult = 0.;
     int tempstore = 0;
+    store->biasedexponent = (char *)calloc(8, sizeof(store->mantissa));
+    store->mantissa = (char *)calloc(strlen(values), sizeof(store->mantissa));
+    int sizetest = sizeof(store);
+    printf("\test  :%d", sizetest);
     // Array to store Data into object name : store
     for (i = 1; i < 37; i++)
     {
