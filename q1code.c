@@ -1,9 +1,9 @@
 // =================================================================
-// Q1 Assignments
+// Q1 Assignments :
+// Floating Point To Decimal Conversion
+// Decimal to Floating Point Conversion
 // This C code char int value is represented through ASCII TABLE
 // Char Comparison using ASCII TABLE
-// Latest working copy as of 3 Nov 2021
-// This program
 // =================================================================
 #include <stdio.h>
 #include <string.h>
@@ -15,16 +15,16 @@
 #define LEN(x) (sizeof(x) / sizeof((x)[0]))
 typedef struct
 {
-    int actexponent;
-    char signbit;
-    char *biasedexponent;
-    char *mantissa;
-    char *binarynonfract;
-    char *binaryfract;
-    double decresult;
+    int actexponent;      // Actual exponent Store
+    char signbit;         // Sign bit Store
+    char *biasedexponent; // biased exponent Store
+    char *mantissa;       // Mantissa Store
+    char *binarynonfract; // binary non fract Store
+    char *binaryfract;    // binary fract Store
+    double decresult;     // Decimal Result Store
 } binfpstruct;
 
-char *strrev(char *str);
+char *reverse(char *str);
 void converttobin(float val, char *binarynonfract, unsigned int len, int option);
 binfpstruct *dectobinfp(float values); // To convert Decimal to IEEE 754 floating point
 binfpstruct *binfptodec(char *values); // To Convert IEEE 754 floating point to decimal
@@ -42,6 +42,8 @@ int main()
     fflush(stdin); // Flush the input buffer of the stream
     if (choice == 2)
     {
+        // Option 2 : To convert 32-bits Binary Number to Decimal Number
+
         printf("\nEnter the 32-bits binary number in IEEE 754 floating point format : ");
         fgets(binnum, sizeof(binnum), stdin);
         /*         while (fgets(binnum, 40, stdin) != NULL)
@@ -51,26 +53,30 @@ int main()
         fptodecstore = binfptodec(binnum);
         printf("\na) IEEE 754 floating point input               : %.34s", binnum);
         printf("\nb) Before conversion, the 1-bit sign bit is    : %c", fptodecstore->signbit);
-        printf("\nc) The 8-bit biased exponent is                : %.8s", fptodecstore->biasedexponent); // to add in parameter for actual exponent
+        printf("\nc) The 8-bit biased exponent is                : %.8s", fptodecstore->biasedexponent);
         printf("\nd) The 8-bit actual exponent is                : %d", fptodecstore->actexponent);
         printf("\ne) The 23-bit fraction is                      : %.23s", fptodecstore->mantissa);
         printf("\nf) After conversion, the decimal number is     : %.12g", fptodecstore->decresult);
+
+        // Below is to free the memory allocated when not needed
         free(fptodecstore->biasedexponent);
         free(fptodecstore->mantissa);
-        
         free(fptodecstore);
     }
     else
     {
+        // Option 1 : To Convert
         printf("\nEnter the number : ");
         scanf("%f", &decnumber);
         binfp = dectobinfp(decnumber);
         printf("\na) The input of decimal number is          : %e", decnumber);
         printf("\nb) After conversion, the 1-bit sign bit is : %c", binfp->signbit);
-        printf("\nc) The actual exponent is                  : %d", binfp->actexponent); // to add in parameter for actual exponent
+        printf("\nc) The actual exponent is                  : %d", binfp->actexponent);
         printf("\nd) The 8-bit biased exponent is            : %.8s", binfp->biasedexponent);
         printf("\ne) The 23-bit fraction is                  : %.23s", binfp->mantissa);
         printf("\nf) IEEE754 binary floating point           : %c %.8s %.23s", binfp->signbit, binfp->biasedexponent, binfp->mantissa);
+
+        // Below is to free the memory allocated when not needed
         free(binfp->mantissa);
         free(binfp->biasedexponent);
         free(binfp);
@@ -87,12 +93,13 @@ binfpstruct *dectobinfp(float values)
     int size1 = 160;
     float value = fabs(values);
     int expsize = 127; // expoenent size for 32bit ieee745
-    int i, length2 = 0, t=0;;
-    //zeroarray(result.binarynonfract, 32);
-    result->binaryfract = (char *)calloc(size1, sizeof(result->binaryfract));
-    result->binarynonfract = (char *)calloc(size1, sizeof(result->binaryfract));
-    converttobin(value, result->binarynonfract, size1, 0);
-    converttobin(value, result->binaryfract, size1, 1);
+    int i, length2 = 0, t = 0;
+    ;
+
+    result->binaryfract = (char *)calloc(size1, sizeof(result->binaryfract));    // To allocate memorry and initialize
+    result->binarynonfract = (char *)calloc(size1, sizeof(result->binaryfract)); // To allocate memory and initialize
+    converttobin(value, result->binarynonfract, size1, 0);                       // Convert To binary for non fraction side
+    converttobin(value, result->binaryfract, size1, 1);                          // Convert To binary for fraction side
     result->signbit = values < 0. ? 49 : 48;
     int sizeez = strlen(result->binaryfract) + strlen(result->binarynonfract);
     result->mantissa = (char *)calloc(sizeez, sizeof(result->mantissa));
@@ -108,9 +115,12 @@ binfpstruct *dectobinfp(float values)
                 break;
             }
         }
-        if(expsize != 0){
+        if (expsize != 0)
+        {
             strcpy(result->mantissa, result->binaryfract + t + 1); // copy
-        }else{
+        }
+        else
+        {
             strcpy(result->mantissa, result->binaryfract + t); // copy
         }
     }
@@ -121,9 +131,8 @@ binfpstruct *dectobinfp(float values)
         expsize = expsize + (strlen(result->binarynonfract) - 1);
     }
 
-    //memcpy(result->mantissa, binstore, strlen(result->binaryfract) + strlen(result->binarynonfract));
-    free(result->binaryfract);
-    free(result->binarynonfract);
+    free(result->binaryfract);    // To free the allocated memory towards binaryfraact
+    free(result->binarynonfract); // To free the allocated memory towards binarynonfract
     result->actexponent = expsize;
     if (expsize != 0)
     {
@@ -136,13 +145,12 @@ binfpstruct *dectobinfp(float values)
         memcpy(result->biasedexponent, "00000000", 8);
     }
 
-    //printf(" TTEEE : %lu", strlen(result.binarynonfract));
-
     return result;
 }
 
-// To convert to binary
-// Option : 1 To get with fraction //
+// ----------------------------------------------------------------------------
+// Function below will be to convert to binary used in decimal to floating point conversion
+// ----------------------------------------------------------------------------
 void converttobin(float value, char *result, unsigned int len, int option)
 {
     float rem = 0, rem2 = 0; // rem <-- remainder for non fraction side, rem2 <--- remainder for fraction side
@@ -167,7 +175,6 @@ void converttobin(float value, char *result, unsigned int len, int option)
             }
             rem2 = truncf(m);
             result[tcount] = (int)rem2 == 1 ? 49 : 48;
-            //printf("\n TEST 2 11 : %f", m);
             tcount++;
         }
     }
@@ -175,19 +182,16 @@ void converttobin(float value, char *result, unsigned int len, int option)
     {
         if (value >= 1.)
         {
-
             // For biased expoenent binary
             if (option == 2)
             {
                 while (mcount < len)
                 {
-                    //printf("\n TEST 2 : %f", rem);
                     rem = truncf(fmodf(v, 2));
-                    //printf("\n TEST 1 : %f", rem);
                     result[mcount] = (int)rem == 1 ? 49 : 48;
 
                     v /= 2;
-                    //printf("\n TEST 2 : %f", n);
+
                     mcount++;
                 }
             }
@@ -196,35 +200,17 @@ void converttobin(float value, char *result, unsigned int len, int option)
                 // For non fraction binary
                 while ((int)v > 0)
                 {
-                    // printf("\n TEST 2 : %f", rem);
                     rem = truncf(fmodf(v, 2));
-                    //printf("\n TEST 1 : %f", rem);
                     result[mcount] = (int)rem == 1 ? 49 : 48;
 
                     v /= 2;
-                    //printf("\n TEST 2 : %f", n);
                     mcount++;
                 }
             }
         }
 
-        strrev(result);
+        reverse(result);
     }
-}
-
-char *strrev(char *str)
-{
-    char c, *front, *back;
-
-    if (!str || !*str)
-        return str;
-    for (front = str, back = str + strlen(str) - 1; front < back; front++, back--)
-    {
-        c = *front;
-        *front = *back;
-        *back = c;
-    }
-    return str;
 }
 
 //================================================================
@@ -239,11 +225,10 @@ binfpstruct *binfptodec(char *values)
     int biaseddec = 0;
     double mantissaresult = 0.;
     int tempstore = 0;
+    // Allocate memory for biased exponents
     store->biasedexponent = (char *)calloc(8, sizeof(store->mantissa));
+    // Allocate memory for mantissa
     store->mantissa = (char *)calloc(strlen(values), sizeof(store->mantissa));
-    int sizetest = sizeof(store);
-    printf("\test  :%d", sizetest);
-    // Array to store Data into object name : store
     for (i = 1; i < 37; i++)
     {
         tempstore = (int)values[i];
@@ -281,7 +266,6 @@ binfpstruct *binfptodec(char *values)
         else
         {
             // Floating point with space
-
             if (i == 1 || i == 10)
             {
                 count = 0;
@@ -304,6 +288,7 @@ binfpstruct *binfptodec(char *values)
                 {
                     store->mantissa[count] = values[i];
                 }
+                // Check if value is 1
                 if (tempstore == 49)
                 {
                     mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
@@ -312,11 +297,27 @@ binfpstruct *binfptodec(char *values)
             }
         }
     }
-    //printf("\nBIASED DECIMAL FORMAT b4 : %d", biaseddec);
     biaseddec -= 127;
-    store->actexponent = biaseddec;
-    //printf("\nBIASED DECIMAL FORMAT : %lf", mantissaresult);
-    store->decresult = pow(-1, signbits) * (1 + mantissaresult) * pow(2, biaseddec);
+    store->actexponent = biaseddec;                                                  // Store the actual exponent
+    store->decresult = pow(-1, signbits) * (1 + mantissaresult) * pow(2, biaseddec); // To calculate and store the decimal result
 
     return store;
+}
+
+//================================================================
+// Function for Reversing of String
+//================================================================
+char *reverse(char *str)
+{
+    char temp, *front, *back;
+
+    if (!str || !*str)
+        return str;
+    for (front = str, back = str + strlen(str) - 1; front < back; front++, back--)
+    {
+        temp = *front;
+        *front = *back;
+        *back = temp;
+    }
+    return str;
 }
