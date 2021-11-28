@@ -1,7 +1,6 @@
 // =================================================================
-// Q1 Assignments :
-// Floating Point To Decimal Conversion
-// Decimal to Floating Point Conversion
+// Assignment Q1 :
+// APP: IEEE-754 Floating Point Converter
 // This C code char int value is represented through ASCII TABLE
 // Char Comparison using ASCII TABLE
 // =================================================================
@@ -10,8 +9,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#define BSIZE 8
-#define MSIZE 23
+#define BSIZE 8  // Biased Exponent Length in binary
+#define MSIZE 23 // Mantissa Length in binary
 #define LEN(x) (sizeof(x) / sizeof((x)[0]))
 typedef struct
 {
@@ -24,7 +23,7 @@ typedef struct
     double decresult;     // Decimal Result Store
 } binfpstruct;
 
-char *reverse(char *str);
+char *reverse(char *str);                                                         // Functions to reverse Strings
 void converttobin(float val, char *binarynonfract, unsigned int len, int option); // Converting Decimal to Binary format
 binfpstruct *dectobinfp(float values);                                            // To convert Decimal to IEEE 754 floating point
 binfpstruct *binfptodec(char *values);                                            // To Convert IEEE 754 floating point to decimal
@@ -45,9 +44,11 @@ int main()
         // Option 2 : To convert 32-bits Binary Number to Decimal Number
 
         printf("\nEnter the 32-bits binary number in IEEE 754 floating point format : ");
-        fgets(binnum, sizeof(binnum), stdin);
-
+        fgets(binnum, sizeof(binnum), stdin); // Get the user Input for 32-bits binary number
+        // Function call to convert binary floating point to decimal
         fptodecstore = binfptodec(binnum);
+
+        // Below is to display out the result
         printf("\na) IEEE 754 floating point input               : %.34s", binnum);
         printf("\nb) Before conversion, the 1-bit sign bit is    : %c", fptodecstore->signbit);
         printf("\nc) The 8-bit biased exponent is                : %.8s", fptodecstore->biasedexponent);
@@ -62,10 +63,15 @@ int main()
     }
     else
     {
-        // Option 1 : To Convert
+        // Option 1 : To Convert decimal value to IEEE 754 Binary Floating Point
+
         printf("\nEnter the decimal value to convert : ");
-        scanf("%f", &decnumber);
+        scanf("%f", &decnumber); // Get the user Input for 32-bits binary number
+
+        // Function call to convert decimal to floating point
         binfp = dectobinfp(decnumber);
+
+        // Below is to display out the result
         printf("\na) The input of decimal number is          : %.10g", decnumber);
         printf("\nb) After conversion, the 1-bit sign bit is : %c", binfp->signbit);
         printf("\nc) The actual exponent is                  : %d", binfp->actexponent);
@@ -78,6 +84,8 @@ int main()
         free(binfp->biasedexponent);
         free(binfp);
     }
+
+    return 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -323,7 +331,6 @@ char *reverse(char *str)
     // Loop to swap the position of the string
     for (front = str, back = str + strlen(str) - 1; front < back; front++, back--)
     {
-        // This is to swap the location of the string
         temp = *front;
         *front = *back;
         *back = temp;
