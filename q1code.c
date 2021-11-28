@@ -25,9 +25,9 @@ typedef struct
 } binfpstruct;
 
 char *reverse(char *str);
-void converttobin(float val, char *binarynonfract, unsigned int len, int option);
-binfpstruct *dectobinfp(float values); // To convert Decimal to IEEE 754 floating point
-binfpstruct *binfptodec(char *values); // To Convert IEEE 754 floating point to decimal
+void converttobin(float val, char *binarynonfract, unsigned int len, int option); // Converting Decimal to Binary format
+binfpstruct *dectobinfp(float values);                                            // To convert Decimal to IEEE 754 floating point
+binfpstruct *binfptodec(char *values);                                            // To Convert IEEE 754 floating point to decimal
 int main()
 {
     int choice = 0;
@@ -46,10 +46,7 @@ int main()
 
         printf("\nEnter the 32-bits binary number in IEEE 754 floating point format : ");
         fgets(binnum, sizeof(binnum), stdin);
-        /*         while (fgets(binnum, 40, stdin) != NULL)
-        {
-            fflush(stdin);
-        } */
+
         fptodecstore = binfptodec(binnum);
         printf("\na) IEEE 754 floating point input               : %.34s", binnum);
         printf("\nb) Before conversion, the 1-bit sign bit is    : %c", fptodecstore->signbit);
@@ -66,10 +63,10 @@ int main()
     else
     {
         // Option 1 : To Convert
-        printf("\nEnter the number : ");
+        printf("\nEnter the decimal value to convert : ");
         scanf("%f", &decnumber);
         binfp = dectobinfp(decnumber);
-        printf("\na) The input of decimal number is          : %e", decnumber);
+        printf("\na) The input of decimal number is          : %.10g", decnumber);
         printf("\nb) After conversion, the 1-bit sign bit is : %c", binfp->signbit);
         printf("\nc) The actual exponent is                  : %d", binfp->actexponent);
         printf("\nd) The 8-bit biased exponent is            : %.8s", binfp->biasedexponent);
@@ -94,15 +91,17 @@ binfpstruct *dectobinfp(float values)
     float value = fabs(values);
     int expsize = 127; // expoenent size for 32bit ieee745
     int i, length2 = 0, t = 0;
-    ;
 
     result->binaryfract = (char *)calloc(size1, sizeof(result->binaryfract));    // To allocate memorry and initialize
     result->binarynonfract = (char *)calloc(size1, sizeof(result->binaryfract)); // To allocate memory and initialize
-    converttobin(value, result->binarynonfract, size1, 0);                       // Convert To binary for non fraction side
-    converttobin(value, result->binaryfract, size1, 1);                          // Convert To binary for fraction side
-    result->signbit = values < 0. ? 49 : 48;
+    converttobin(value, result->binarynonfract, size1, 0);                       // Convert To binary for Integer Part
+    converttobin(value, result->binaryfract, size1, 1);                          // Convert To binary for Fractional Part
+    result->signbit = values < 0. ? 49 : 48;                                     // Get the Sign Bit
+    // Calculate the total length of binary fractional part(binaryfract) and the integer part(binarynonfract)
     int sizeez = strlen(result->binaryfract) + strlen(result->binarynonfract);
+    // Allocate memory to mantissa storage
     result->mantissa = (char *)calloc(sizeez, sizeof(result->mantissa));
+    // get the length of binary fraction side
     length2 = strlen(result->binaryfract);
     if (value < 1)
     {
@@ -133,11 +132,11 @@ binfpstruct *dectobinfp(float values)
 
     free(result->binaryfract);    // To free the allocated memory towards binaryfraact
     free(result->binarynonfract); // To free the allocated memory towards binarynonfract
-    result->actexponent = expsize;
+    result->actexponent = expsize; // Store the exponent size
     if (expsize != 0)
     {
         result->biasedexponent = (char *)calloc(20, sizeof(result->mantissa));
-        converttobin((float)expsize, result->biasedexponent, 8, 2);
+        converttobin((float)expsize, result->biasedexponent, 8, 2); // Convert to Biased Exponent
     }
     else
     {
@@ -159,7 +158,9 @@ void converttobin(float value, char *result, unsigned int len, int option)
     int mcount = 0, tcount = 0;
     //char *reversestr = malloc(sizeof(char) * len);
 
-    // Option 1 : Fraction Option2 : Non Decimal to binary
+    // Option 1 : Fractional part conversion
+    // Option 0 : Integer part conversion
+    // Option 2 : Biased Exponent Binary Conversion
     if (option == 1)
     {
         while (tcount < len)
@@ -182,9 +183,10 @@ void converttobin(float value, char *result, unsigned int len, int option)
     {
         if (value >= 1.)
         {
-            // For biased expoenent binary
+            
             if (option == 2)
             {
+                // For biased expoenent binary
                 while (mcount < len)
                 {
                     rem = truncf(fmodf(v, 2));
@@ -256,6 +258,7 @@ binfpstruct *binfptodec(char *values)
                 {
                     store->mantissa[count] = values[i];
                 }
+                // Check if Value is 1
                 if (tempstore == 49)
                 {
                     mantissaresult = mantissaresult + (pow(2, ((count + 1) * -1)));
@@ -311,10 +314,16 @@ char *reverse(char *str)
 {
     char temp, *front, *back;
 
+    // Check if str == null
     if (!str || !*str)
+    {
         return str;
+    }
+
+    // Loop to swap the position of the string
     for (front = str, back = str + strlen(str) - 1; front < back; front++, back--)
     {
+        // This is to swap the location of the string
         temp = *front;
         *front = *back;
         *back = temp;
