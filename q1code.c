@@ -197,7 +197,7 @@ void converttobin(float value, char *result, unsigned int len, int option)
                 // For biased expoenent binary
                 while (mcount < len)
                 {
-                    rem = truncf(fmodf(v, 2));
+                    rem = truncf(fmodf(v, 2)); // To get the remainder value
                     result[mcount] = (int)rem == 1 ? 49 : 48;
 
                     v /= 2;
@@ -210,7 +210,7 @@ void converttobin(float value, char *result, unsigned int len, int option)
                 // For non fraction binary
                 while ((int)v > 0)
                 {
-                    rem = truncf(fmodf(v, 2));
+                    rem = truncf(fmodf(v, 2)); // To get the remainder value
                     result[mcount] = (int)rem == 1 ? 49 : 48;
 
                     v /= 2;
@@ -230,8 +230,8 @@ binfpstruct *binfptodec(char *values)
 {
     binfpstruct *store = (binfpstruct *)malloc(sizeof(binfpstruct));
     store->signbit = values[0];
-    int signbits = (int)values[0] == 49 ? 1 : 0;
-    int count = 0, indxempt = 0, i;
+    int signbits = (int)values[0] == 49 ? 1 : 0; // Get Sign Bits value
+    int count = 0, i;
     int biaseddec = 0;
     double mantissaresult = 0.;
     int tempstore = 0;
