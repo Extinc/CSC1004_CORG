@@ -130,8 +130,8 @@ binfpstruct *dectobinfp(float values)
         expsize = expsize + (strlen(result->binarynonfract) - 1);
     }
 
-    free(result->binaryfract);    // To free the allocated memory towards binaryfraact
-    free(result->binarynonfract); // To free the allocated memory towards binarynonfract
+    free(result->binaryfract);     // To free the allocated memory towards binaryfraact
+    free(result->binarynonfract);  // To free the allocated memory towards binarynonfract
     result->actexponent = expsize; // Store the exponent size
     if (expsize != 0)
     {
@@ -152,14 +152,14 @@ binfpstruct *dectobinfp(float values)
 // ----------------------------------------------------------------------------
 void converttobin(float value, char *result, unsigned int len, int option)
 {
-    float rem = 0, rem2 = 0; // rem <-- remainder for non fraction side, rem2 <--- remainder for fraction side
-    float v = truncf(value);
-    float m = value - v; // value with decimal
-    int mcount = 0, tcount = 0;
+    float rem = 0, rem2 = 0;    // rem <-- remainder for integer side, rem2 <--- remainder for fractional side
+    float v = truncf(value);    // Gets the value of integer part
+    float m = value - v;        // value with decimal
+    int mcount = 0, tcount = 0; // Counter variable
     //char *reversestr = malloc(sizeof(char) * len);
 
-    // Option 1 : Fractional part conversion
     // Option 0 : Integer part conversion
+    // Option 1 : Fractional part conversion
     // Option 2 : Biased Exponent Binary Conversion
     if (option == 1)
     {
@@ -183,7 +183,7 @@ void converttobin(float value, char *result, unsigned int len, int option)
     {
         if (value >= 1.)
         {
-            
+
             if (option == 2)
             {
                 // For biased expoenent binary
