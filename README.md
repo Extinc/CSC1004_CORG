@@ -1,6 +1,6 @@
 # COMPUTER ORGANIZATION & ARCHITECTURE
 
-Assignment:
+Assignment Q1:
 
 IEEE754 binary floating point converter in C (32bit)
 
